@@ -43,7 +43,7 @@ graph TD
     APIServer -.->|K3s Protocol| W2
 
     linkStyle default stroke-width:2px,fill:none;
-
+```
 ⚙️ Hardware Bill of Materials (BOM)
 Role	Hostname	Model	RAM	OS
 Control Plane	k8s-master	Raspberry Pi 5	16GB	Debian Bookworm (Lite)
