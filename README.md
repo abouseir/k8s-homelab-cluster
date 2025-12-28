@@ -10,21 +10,21 @@ The cluster follows a standard Control Plane / Data Plane architecture, managed 
 ```mermaid
 graph TD
     subgraph "Management Zone"
-        Laptop[ThinkPad T480s<br/>(Admin Station)]
+        Laptop["ThinkPad T480s<br/>(Admin Station)"]
         style Laptop fill:#f9f,stroke:#333,stroke-width:2px
     end
 
     subgraph "Kubernetes Cluster (Private LAN)"
         subgraph "Control Plane"
-            Master[k8s-master<br/>RPi 5 - 16GB]
-            APIServer[API Server :6443]
+            Master["k8s-master<br/>RPi 5 - 16GB"]
+            APIServer["API Server :6443"]
             Master --- APIServer
             style Master fill:#bbf,stroke:#333,stroke-width:2px
         end
 
         subgraph "Data Plane (Workers)"
-            W1[k8s-worker-1<br/>RPi 5 - 8GB]
-            W2[k8s-worker-2<br/>RPi 4 - 4GB]
+            W1["k8s-worker-1<br/>RPi 5 - 8GB"]
+            W2["k8s-worker-2<br/>RPi 4 - 4GB"]
             
             Dashboard[Dashboard Pod]
             Apps[User Apps]
@@ -38,7 +38,7 @@ graph TD
 
     %% Network Flows
     Laptop -->|SSH :22| Master
-    Laptop ==>|HTTPS :30000<br/>(NodePort Access)| W1
+    Laptop ==>|"HTTPS :30000<br/>(NodePort Access)"| W1
     APIServer -.->|K3s Protocol| W1
     APIServer -.->|K3s Protocol| W2
 
@@ -53,7 +53,11 @@ Admin	ThinkPad-Lab	Lenovo T480s	16GB	Ubuntu Linux
 🔧 Technical Deep Dive: Why we did this?
 1. Kernel Hardening & Cgroups (The RPi 5 Issue)
 
-The Problem: Raspberry Pi OS "Bookworm" (Debian 12) uses a recent Linux Kernel that creates a conflict with Container Runtimes (like containerd/K3s). By default, the memory cgroup controller is disabled. The Symptom: Without fixing this, K3s fails to start, or Pods remain stuck in Pending state because the scheduler cannot read memory limits. The Fix: We modified /boot/firmware/cmdline.txt to force-enable these controllers:
+The Problem: Raspberry Pi OS "Bookworm" (Debian 12) uses a recent Linux Kernel that creates a conflict with Container Runtimes (like containerd/K3s). By default, the memory cgroup controller is disabled.
+
+The Symptom: Without fixing this, K3s fails to start, or Pods remain stuck in Pending state because the scheduler cannot read memory limits.
+
+The Fix: We modified /boot/firmware/cmdline.txt to force-enable these controllers:
 Plaintext
 
 cgroup_enable=cpuset cgroup_enable=memory cgroup_memory=1
